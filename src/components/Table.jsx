@@ -1,39 +1,79 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import {
+  Table as MuiTable,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from '@mui/material';
 
 const Table = ({ columns, data }) => {
   return (
-    <Box sx={{ overflowX: 'auto', width: '100%' }}>
-      <table
-        border="1"
-        cellPadding="8"
-        cellSpacing="0"
-        style={{
-          width: '100%',
-          minWidth: '600px', // set a min width to allow scrolling on small screens
-          borderCollapse: 'collapse',
-        }}
-      >
-        <thead>
-          <tr>
+    <TableContainer
+      component={Paper}
+      sx={{
+        width: '100%',
+        overflowX: 'auto',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        borderRadius: '8px',
+      }}
+    >
+      <MuiTable sx={{ width: "100%", maxWidth: "100%" }}>
+        <TableHead>
+          <TableRow
+            sx={{
+              backgroundColor: '#f5f5f5',
+            }}
+          >
             {columns.map(({ header, key }) => (
-              <th key={key}>{header}</th>
+              <TableCell
+                key={key}
+                sx={{
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  color: '#333',
+                  borderBottom: '2px solid #e0e0e0',
+                  padding: '12px',
+                }}
+              >
+                {header}
+              </TableCell>
             ))}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {data.map((row, idx) => (
-            <tr key={idx}>
+            <TableRow
+              key={idx}
+              sx={{
+                '&:hover': {
+                  backgroundColor: '#fafafa',
+                },
+                '&:nth-of-type(odd)': {
+                  backgroundColor: '#ffffff',
+                },
+              }}
+            >
               {columns.map(({ key, render }) => (
-                <td key={key}>
+                <TableCell
+                  key={key}
+                  sx={{
+                    fontSize: '0.9rem',
+                    color: '#555',
+                    borderBottom: '1px solid #e0e0e0',
+                    padding: '10px',
+                  }}
+                >
                   {render ? render(row[key], row) : row[key]}
-                </td>
+                </TableCell>
               ))}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </Box>
+        </TableBody>
+      </MuiTable>
+    </TableContainer>
   );
 };
 
