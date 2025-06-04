@@ -7,7 +7,7 @@ const App = () => {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<GithubPage />} />
+          <Route path="/etiqa-assessment/" element={<GithubPage />} />
         </Routes>
       </BrowserRouter>
     </>
