@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { CircularProgress, Box, Typography, Grid, Button } from "@mui/material";
+import {
+  CircularProgress,
+  Box,
+  Typography,
+  Grid,
+  Button,
+  Modal,
+  Paper,
+} from "@mui/material";
 import Table from "../components/Table";
 import { githubAPI } from "../api/githubAPI";
 import StarIcon from "@mui/icons-material/Star";
@@ -10,7 +18,10 @@ const GithubPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [selectedRepo, setSelectedRepo] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const itemsPerPage = 30;
+  const maxDescriptionLength = 100; // Maximum characters for description preview
 
   useEffect(() => {
     const fetchRepos = async () => {
@@ -38,6 +49,16 @@ const GithubPage = () => {
     }
   };
 
+  const handleOpenModal = (repo) => {
+    setSelectedRepo(repo);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedRepo(null);
+  };
+
   const columns = [
     {
       header: "Avatar",
@@ -56,17 +77,13 @@ const GithubPage = () => {
     {
       header: "Owner",
       key: "owner",
-      render: (_, row) => (
-        <Box display="flex" justifyContent="center">
-          {row.owner.login}
-        </Box>
-      ),
+      render: (_, row) => <Box display="flex">{row.owner.login}</Box>,
     },
     {
       header: "Repository",
       key: "name",
       render: (value, row) => (
-        <Box display="flex" justifyContent="center">
+        <Box display="flex">
           <a href={row.html_url} target="_blank" rel="noopener noreferrer">
             {value}
           </a>
@@ -76,8 +93,26 @@ const GithubPage = () => {
     {
       header: "Description",
       key: "description",
-      render: (value) => {
-        return value || "No description";
+      render: (value, row) => {
+        const isLongDescription = value && value.length > maxDescriptionLength;
+        const shortDescription = value
+          ? value.slice(0, maxDescriptionLength) +
+            (isLongDescription ? "..." : "")
+          : "No description";
+        return (
+          <Box display="flex" alignItems="center">
+            <span>{shortDescription}</span>
+            {isLongDescription && (
+              <Button
+                size="small"
+                onClick={() => handleOpenModal(row)}
+                sx={{ ml: 1, textTransform: "none" }}
+              >
+                View More
+              </Button>
+            )}
+          </Box>
+        );
       },
     },
     {
@@ -100,9 +135,8 @@ const GithubPage = () => {
   return (
     <Box
       sx={{
-        maxWidth: "1000px",
         margin: "0 auto",
-        padding: 2, // spacing = 16px (theme-based)
+        padding: { xs: 2, sm: 10 },
         boxSizing: "border-box",
       }}
     >
@@ -187,6 +221,52 @@ const GithubPage = () => {
           </Grid>
         </Grid>
       )}
+
+      <Modal open={modalOpen} onClose={handleCloseModal}>
+        <Paper
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 600 },
+            maxHeight: "80vh",
+            overflow: "auto",
+            p: 3,
+            bgcolor: "background.paper",
+          }}
+        >
+          {selectedRepo && (
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                {selectedRepo.name}
+              </Typography>
+              <Typography variant="subtitle1" gutterBottom>
+                Owner: {selectedRepo.owner.login}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                Description: {selectedRepo.description || "No description"}
+              </Typography>
+              <Box display="flex" alignItems="center" gap={0.5} mb={2}>
+                <StarIcon fontSize="small" sx={{ color: "#fbc02d" }} />
+                <Typography>{selectedRepo.stargazers_count} Stars</Typography>
+              </Box>
+              <Button
+                variant="contained"
+                href={selectedRepo.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ mr: 1 }}
+              >
+                Visit Repository
+              </Button>
+              <Button variant="outlined" onClick={handleCloseModal}>
+                Close
+              </Button>
+            </Box>
+          )}
+        </Paper>
+      </Modal>
     </Box>
   );
 };
